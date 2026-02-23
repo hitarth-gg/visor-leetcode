@@ -34,9 +34,6 @@ export default function AuthCallback() {
         }
       }
 
-      // Check what kind of callback this is via the hash fragment (implicit flow)
-      // Supabase handles the hash automatically on getSession, so we just need
-      // to check the current session.
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -45,19 +42,6 @@ export default function AuthCallback() {
         navigate("/sign-in");
         return;
       }
-
-    //   // Detect password recovery flow — redirect to reset-password page
-    //   if (session.user?.recovery_sent_at) {
-    //     const isRecovery =
-    //       new Date().getTime() -
-    //         new Date(session.user.recovery_sent_at).getTime() <
-    //       1000 * 60 * 60; // within the last hour
-
-    //     if (isRecovery) {
-    //       navigate("/reset-password");
-    //       return;
-    //     }
-    //   }
 
       navigate(next);
     }

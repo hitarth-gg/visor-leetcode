@@ -5,8 +5,8 @@ import type { Theme } from "~/types/shared";
 export function ContextProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     const storedTheme = localStorage.getItem("theme") as Theme | null;
-    document.body.classList.toggle("dark", storedTheme === "dark");
-    return storedTheme ?? "light";
+    document.body.classList.toggle("dark", (storedTheme ?? "dark") === "dark");
+    return storedTheme ?? "dark";
   });
   const [otherState, setOtherState] = useState<number>(0);
 

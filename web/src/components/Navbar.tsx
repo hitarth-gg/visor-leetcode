@@ -18,6 +18,8 @@ import type { Session } from "@supabase/supabase-js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Spinner } from "./ui/spinner";
 import SearchCompany from "./SearchCompany";
+import okeyFrieren from "~/assets/okey-frieren.png";
+import GithubSvg from "~/assets/githubSvg";
 
 export default function Navbar() {
   return (
@@ -27,7 +29,6 @@ export default function Navbar() {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigateLink title="" icon={<House size={20} />} path="/" />
-              <NavigateDropdown />
               <NavigateLink title="All Problems" path="/all-problems" />
             </NavigationMenuList>
           </NavigationMenu>
@@ -36,6 +37,18 @@ export default function Navbar() {
         <MobileNav />
 
         <div className="flex h-full items-center justify-between gap-4">
+          <Link
+            to="https://github.com/hitarth-gg/visor-leetcode"
+            target="_blank"
+          >
+            <Button
+              variant={"ghost"}
+              size={"icon"}
+              className="h-8 cursor-pointer"
+            >
+             <GithubSvg />
+            </Button>
+          </Link>
           <ToggleTheme />
           <SearchCompany />
           <AuthButton />
@@ -80,7 +93,29 @@ function MobileNav() {
           document.body.style.overflow = "";
         }}
       >
-        <div>Mobile Navigation goes here</div>
+        <nav className="flex flex-col gap-2 p-4">
+          <Link
+            to="/"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            onClick={() => {
+              setMenuOpen(false);
+              document.body.style.overflow = "";
+            }}
+          >
+            <House size={18} />
+            Home
+          </Link>
+          <Link
+            to="/all-problems"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            onClick={() => {
+              setMenuOpen(false);
+              document.body.style.overflow = "";
+            }}
+          >
+            All Problems
+          </Link>
+        </nav>
       </div>
     </>
   );
@@ -196,7 +231,7 @@ function ToggleTheme() {
     <Button
       variant={"ghost"}
       size={"icon"}
-      className="h-8 w-8 p-0"
+      className="h-8 w-8 cursor-pointer p-0"
       onClick={() => {
         setTheme(theme === "light" ? "dark" : "light");
       }}
