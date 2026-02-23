@@ -22,12 +22,12 @@ jobs:
           echo "VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY }}" >> .env
       - name: Install dependencies
         run: |
-          cd frontend
+          cd web
           npm install
 
       - name: Build project
         run: |
-          cd frontend
+          cd web
           npm run build
 
       - name: Set Git identity
@@ -37,7 +37,7 @@ jobs:
 
       - name: Deploy using npm script
         run: |
-          cd frontend
+          cd web
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           npm run deploy
         env:
