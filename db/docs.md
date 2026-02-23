@@ -50,3 +50,15 @@ CREATE TABLE IF NOT EXISTS user_completed_problems (
   PRIMARY KEY (user_id, problem_id)
 );
 ```
+
+# View for company problems with tags
+
+We can create a view to easily query problems along with their associated tags for a given company.
+Run this in supabase SQL editor:
+
+```sql
+CREATE OR REPLACE VIEW unique_problem_tags AS
+SELECT DISTINCT tag
+FROM problem_tags
+ORDER BY tag;
+```

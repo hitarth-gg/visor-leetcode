@@ -10,7 +10,9 @@ export default function SignIn() {
     setError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}/auth/callback`,
+      },
     });
     if (error) setError(error.message);
   }

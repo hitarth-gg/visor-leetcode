@@ -1,4 +1,3 @@
-// supabase_bulk_sync.go
 package main
 
 import (
@@ -70,7 +69,6 @@ func supabaseSyncMain() {
 	}
 	defer remote.Close()
 
-	// Optional: small connection tuning
 	remote.SetMaxOpenConns(10)
 	remote.SetConnMaxLifetime(30 * time.Minute)
 
@@ -167,10 +165,10 @@ CREATE TEMP TABLE temp_companies (
 
 	// Upsert from temp into real table
 	if _, err := tx.Exec(`
-INSERT INTO companies (id, name)
-SELECT id, name FROM temp_companies
-ON CONFLICT (id) DO UPDATE
-  SET name = EXCLUDED.name;
+	INSERT INTO companies (id, name)
+	SELECT id, name FROM temp_companies
+	ON CONFLICT (id) DO UPDATE
+		SET name = EXCLUDED.name;
 `); err != nil {
 		return fmt.Errorf("upsert companies: %w", err)
 	}
@@ -255,16 +253,16 @@ CREATE TEMP TABLE temp_problems (
 	}
 
 	if _, err := tx.Exec(`
-INSERT INTO problems (id, url, title, difficulty, acceptance, frequency, updated_at)
-SELECT id, url, title, difficulty, acceptance, frequency, updated_at FROM temp_problems
-ON CONFLICT (id) DO UPDATE
-  SET url = EXCLUDED.url,
-      title = EXCLUDED.title,
-      difficulty = EXCLUDED.difficulty,
-      acceptance = EXCLUDED.acceptance,
-      frequency = EXCLUDED.frequency,
-      updated_at = EXCLUDED.updated_at;
-`); err != nil {
+	INSERT INTO problems (id, url, title, difficulty, acceptance, frequency, updated_at)
+	SELECT id, url, title, difficulty, acceptance, frequency, updated_at FROM temp_problems
+	ON CONFLICT (id) DO UPDATE
+	  SET url = EXCLUDED.url,
+	      title = EXCLUDED.title,
+	      difficulty = EXCLUDED.difficulty,
+	      acceptance = EXCLUDED.acceptance,
+	      frequency = EXCLUDED.frequency,
+	      updated_at = EXCLUDED.updated_at;
+	`); err != nil {
 		return fmt.Errorf("upsert problems: %w", err)
 	}
 
@@ -283,12 +281,12 @@ func bulkSyncProblemTags(ctx context.Context, local, remote *sqlx.DB) error {
 	defer tx.Rollback()
 
 	if _, err := tx.Exec(`
-CREATE TEMP TABLE temp_problem_tags (
-  problem_id bigint,
-  tag text,
-  added_at timestamptz
-) ON COMMIT DROP;
-`); err != nil {
+	CREATE TEMP TABLE temp_problem_tags (
+	  problem_id bigint,
+	  tag text,
+	  added_at timestamptz
+	) ON COMMIT DROP;
+	`); err != nil {
 		return fmt.Errorf("create temp_problem_tags: %w", err)
 	}
 
