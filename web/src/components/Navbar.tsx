@@ -2,11 +2,9 @@ import { House, LogOut, Menu, Moon, Sun, User, X } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "~/components/ui/navigation-menu";
 import { useAppContext } from "~/context/useAppContext";
@@ -18,8 +16,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Spinner } from "./ui/spinner";
 import SearchCompany from "./SearchCompany";
-import okeyFrieren from "~/assets/okey-frieren.png";
-import GithubSvg from "~/assets/githubSvg";
+import GithubSvg from "~/assets/GithubSvg";
 
 export default function Navbar() {
   return (
@@ -46,7 +43,7 @@ export default function Navbar() {
               size={"icon"}
               className="h-8 cursor-pointer"
             >
-             <GithubSvg />
+              <GithubSvg />
             </Button>
           </Link>
           <ToggleTheme />
@@ -96,7 +93,7 @@ function MobileNav() {
         <nav className="flex flex-col gap-2 p-4">
           <Link
             to="/"
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            className="hover:bg-accent flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium"
             onClick={() => {
               setMenuOpen(false);
               document.body.style.overflow = "";
@@ -107,7 +104,7 @@ function MobileNav() {
           </Link>
           <Link
             to="/all-problems"
-            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+            className="hover:bg-accent flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium"
             onClick={() => {
               setMenuOpen(false);
               document.body.style.overflow = "";
@@ -208,19 +205,6 @@ function NavigateLink({
           {title || icon}
         </Link>
       </NavigationMenuLink>
-    </NavigationMenuItem>
-  );
-}
-
-function NavigateDropdown() {
-  return (
-    <NavigationMenuItem>
-      <NavigationMenuTrigger className="h-8 gap-1.5 px-2.5 text-sm">
-        Components
-      </NavigationMenuTrigger>
-      <NavigationMenuContent>
-        <NavigationMenuLink className="p-4">Link</NavigationMenuLink>
-      </NavigationMenuContent>
     </NavigationMenuItem>
   );
 }

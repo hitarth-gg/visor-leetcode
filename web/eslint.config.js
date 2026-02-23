@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", "src/components/ui"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
@@ -22,6 +22,8 @@ export default defineConfig([
     rules: {
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "off",
+      "react-refresh/only-export-components": "off",
+      "tailwindcss/no-unnecessary-arbitrary-value": "off",
     },
   },
 ]);

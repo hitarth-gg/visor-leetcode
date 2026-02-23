@@ -137,9 +137,10 @@ export default function Home() {
           </Link>
         </div>
 
-        <Link to={
-          session ? "/all-problems" : "/sign-in?next=/all-problems"
-        } className="w-full">
+        <Link
+          to={session ? "/all-problems" : "/sign-in?next=/all-problems"}
+          className="w-full"
+        >
           {!session ? (
             <Button
               size={"lg"}

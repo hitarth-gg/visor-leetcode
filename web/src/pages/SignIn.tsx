@@ -43,7 +43,8 @@ export default function SignIn() {
         </div>
 
         <div className="text-muted-foreground mt-2 w-full text-center text-xs">
-          No email based sign in yet, because the DB runs on Supabase Free tier with email based verification limits.
+          No email based sign in yet, because the DB runs on Supabase Free tier
+          with email based verification limits.
         </div>
       </div>
     </div>

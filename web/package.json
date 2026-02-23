@@ -6,9 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build": "vite build",
     "preview": "vite preview",
+    "lint:eslint": "npx eslint -c eslint.config.js",
+    "lint": "npx tsc --noEmit && prettier . --check --experimental-cli",
+    "lint:fix": "npx prettier . --write --experimental-cli && npm run lint:eslint --fix",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {

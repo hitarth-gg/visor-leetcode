@@ -3,7 +3,6 @@ import Home from "./pages/Home";
 import ErrorPage from "./pages/ErrorPage";
 import AppLayout from "./pages/AppLayout";
 import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
 import AuthCallback from "./pages/AuthCallback";
 import CompanyProblems from "./pages/CompanyProblems";
 import AllProblems from "./pages/AllProblems";

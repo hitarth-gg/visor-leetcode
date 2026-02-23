@@ -55,7 +55,7 @@ export function TagFilterDropdown({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-72 p-3 " align="start">
+      <DropdownMenuContent className="w-72 p-3" align="start">
         {/* Mode Toggle */}
         {selectedTags.length > 0 && (
           <>
@@ -111,7 +111,7 @@ export function TagFilterDropdown({
             <DropdownMenuSeparator />
             <button
               onClick={clearAll}
-              className="text-muted-foreground hover:text-primary mt-2 text-xs cursor-pointer"
+              className="text-muted-foreground hover:text-primary mt-2 cursor-pointer text-xs"
             >
               Clear filters
             </button>
