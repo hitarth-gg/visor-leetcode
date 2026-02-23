@@ -28,7 +28,7 @@ export default function Navbar() {
             <NavigationMenuList>
               <NavigateLink title="" icon={<House size={20} />} path="/" />
               <NavigateDropdown />
-              <NavigateLink title="Docs" path="/docs" />
+              <NavigateLink title="All Problems" path="/all-problems" />
             </NavigationMenuList>
           </NavigationMenu>
         </div>

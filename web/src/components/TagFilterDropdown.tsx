@@ -111,7 +111,7 @@ export function TagFilterDropdown({
             <DropdownMenuSeparator />
             <button
               onClick={clearAll}
-              className="text-muted-foreground hover:text-primary mt-2 text-xs"
+              className="text-muted-foreground hover:text-primary mt-2 text-xs cursor-pointer"
             >
               Clear filters
             </button>

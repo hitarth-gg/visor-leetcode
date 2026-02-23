@@ -6,6 +6,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import AuthCallback from "./pages/AuthCallback";
 import CompanyProblems from "./pages/CompanyProblems";
+import AllProblems from "./pages/AllProblems";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,11 @@ const router = createBrowserRouter([
       {
         path: "/company/:id",
         element: <CompanyProblems />,
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "/all-problems",
+        element: <AllProblems />,
         errorElement: <ErrorPage />,
       },
       {
