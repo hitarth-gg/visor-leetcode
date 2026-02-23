@@ -16,7 +16,7 @@ jobs:
 
       - name: Clear and create .env file
         run: |
-          cd frontend
+          cd web
           echo "" > .env
           echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
           echo "VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY }}" >> .env
