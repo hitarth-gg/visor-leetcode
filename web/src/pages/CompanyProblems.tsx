@@ -14,7 +14,13 @@ import {
 } from "ag-grid-community";
 
 import { supabase } from "~/supabase/supabaseClient";
-import { ArrowUpRight, CheckCircle2, Building2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Building2,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 import { useAppContext } from "~/context/useAppContext";
 import { Badge } from "~/components/ui/badge";
 import { getCompanyColor } from "~/utils/companyColors";
@@ -379,6 +385,8 @@ export default function CompanyProblems() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagMatchMode, setTagMatchMode] = useState<"AND" | "OR">("AND");
 
+  const [hideCompleted, setHideCompleted] = useState(false);
+
   const gridRef = useRef<AgGridReact<Problem>>(null);
 
   /* ─── Fetch ──────────────────────────────────────────────── */
@@ -478,16 +486,21 @@ export default function CompanyProblems() {
     // AG Grid external filter handles difficulty; quick filter handles search
     gridRef.current.api.setGridOption("quickFilterText", search);
     gridRef.current.api.onFilterChanged();
-  }, [search, diffFilter, selectedTags, tagMatchMode]);
+  }, [search, diffFilter, selectedTags, tagMatchMode, hideCompleted]);
 
   const isExternalFilterPresent = useCallback(() => {
-    return diffFilter !== "All" || selectedTags.length > 0;
-  }, [diffFilter, selectedTags]);
+    return diffFilter !== "All" || selectedTags.length > 0 || hideCompleted;
+  }, [diffFilter, selectedTags, hideCompleted]);
 
   const doesExternalFilterPass = useCallback(
     (node: { data?: Problem }) => {
       const problem = node.data;
       if (!problem) return false;
+
+      // Hide completed filter
+      if (hideCompleted && problem.completed) {
+        return false;
+      }
 
       // Difficulty filter
       if (diffFilter !== "All" && problem.difficulty !== diffFilter) {
@@ -513,15 +526,33 @@ export default function CompanyProblems() {
 
       return true;
     },
-    [diffFilter, selectedTags, tagMatchMode],
+    [diffFilter, selectedTags, tagMatchMode, hideCompleted],
   );
 
   /* ─── Column Definitions ────────────────────────────────── */
+
   const columnDefs = useMemo<ColDef<Problem>[]>(
     () => [
       {
         field: "completed",
         headerName: "",
+        headerComponent: () => (
+          <div
+            className="flex h-full cursor-pointer items-center justify-center"
+            title={hideCompleted ? "Show completed" : "Hide completed"}
+            onClick={() => setHideCompleted((prev) => !prev)}
+          >
+            {hideCompleted ? (
+              <EyeOff
+                className={`h-4 w-4 text-red-500`}
+              />
+            ) : (
+              <Eye
+                className={`h-4 w-4`}
+              />
+            )}
+          </div>
+        ),
         width: 48,
         minWidth: 48,
         maxWidth: 48,
@@ -618,12 +649,9 @@ export default function CompanyProblems() {
         headerName: "Tags",
         flex: 1.5,
         minWidth: 150,
-
         sortable: false,
         filter: false,
         cellRenderer: TagsCellRenderer,
-
-        // tooltip:
         tooltipComponent: TagsTooltip,
         tooltipValueGetter: (params) => params.value,
       },
@@ -634,15 +662,12 @@ export default function CompanyProblems() {
         minWidth: 150,
         filter: false,
         cellRenderer: OtherCompaniesCellRenderer,
-        // sort by number of other companies
         comparator: (a, b) => (b?.length ?? 0) - (a?.length ?? 0),
-
-        // tooltip:
         tooltipComponent: OtherCompaniesTooltip,
         tooltipValueGetter: (params) => params.value,
       },
     ],
-    [],
+    [hideCompleted],
   );
 
   const defaultColDef = useMemo<ColDef>(
