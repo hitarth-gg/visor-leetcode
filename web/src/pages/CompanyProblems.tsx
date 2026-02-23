@@ -20,6 +20,7 @@ import { Badge } from "~/components/ui/badge";
 import { getCompanyColor } from "~/utils/companyColors";
 import { cn } from "~/lib/utils";
 import { Separator } from "~/components/ui/separator";
+import { TagFilterDropdown } from "~/components/TagFilterDropdown";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -38,9 +39,11 @@ type Problem = {
   tags: string[];
   other_companies: string[];
   completed: boolean;
+  timeframe_tag: TimeFrameTag | null;
 };
 
 type Company = { id: number; name: string };
+type TimeFrameTag = "six-months" | "three-months" | "thirty-days";
 
 /* ─────────────────────────────────────────────────────────── */
 /* Constants */
@@ -61,7 +64,7 @@ const DIFFICULTY_STYLES: Record<string, string> = {
 /* Helpers */
 /* ─────────────────────────────────────────────────────────── */
 async function fetchAllCompanyProblems(companyId: number) {
-  const PAGE_SIZE = 1000;
+  const PAGE_SIZE = 4000;
   let from = 0;
   const allRows: any[] = [];
 
@@ -70,6 +73,7 @@ async function fetchAllCompanyProblems(companyId: number) {
       .from("company_problems")
       .select(
         `
+        timeframe_tag,
         problem:problems (
           id,
           title,
@@ -200,9 +204,12 @@ function TagsTooltip({ value }: ITooltipParams<Problem, string[]>) {
 function TagsCellRenderer({ value }: ICellRendererParams<Problem, string[]>) {
   if (!value || value.length === 0) return null;
   return (
-    <div className="flex h-full flex-wrap items-center gap-x-0.5 gap-y-0">
+    <div className="gap-y-0. flex h-full flex-wrap items-center gap-x-1">
       {value.slice(0, 3).map((tag) => (
-        <Badge variant={"secondary"} className="text-muted-foreground my-0">
+        <Badge
+          variant={"secondary"}
+          className="text-muted-foreground my-0 px-2"
+        >
           {tag}
         </Badge>
       ))}
@@ -278,6 +285,10 @@ export default function CompanyProblems() {
   const [search, setSearch] = useState("");
   const [diffFilter, setDiffFilter] = useState<Difficulty | "All">("All");
 
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagMatchMode, setTagMatchMode] = useState<"AND" | "OR">("AND");
+
   const gridRef = useRef<AgGridReact<Problem>>(null);
 
   /* ─── Fetch ──────────────────────────────────────────────── */
@@ -303,6 +314,7 @@ export default function CompanyProblems() {
       setCompany(companyData);
 
       const data = await fetchAllCompanyProblems(companyId);
+      console.log("Fetched problems:", data);
 
       if (!data) {
         setError("Failed to fetch problems.");
@@ -326,6 +338,7 @@ export default function CompanyProblems() {
               .filter((name: string) => name && name !== companyData.name) ??
             [],
           completed: false,
+          timeframe_tag: row.timeframe_tag ?? null,
         };
       });
 
@@ -353,6 +366,20 @@ export default function CompanyProblems() {
     fetchData();
   }, [companyId]);
 
+  useEffect(() => {
+    async function fetchTags() {
+      const { data, error } = await supabase
+        .from("unique_problem_tags")
+        .select("*");
+
+      if (error || !data) return;
+
+      setAllTags(data.map((t) => t.tag));
+    }
+
+    fetchTags();
+  }, []);
+
   /* ─── Quick filter (search + difficulty) ────────────────── */
   useEffect(() => {
     if (!gridRef.current?.api) return;
@@ -360,19 +387,42 @@ export default function CompanyProblems() {
     // AG Grid external filter handles difficulty; quick filter handles search
     gridRef.current.api.setGridOption("quickFilterText", search);
     gridRef.current.api.onFilterChanged();
-  }, [search, diffFilter]);
+  }, [search, diffFilter, selectedTags, tagMatchMode]);
 
-  const isExternalFilterPresent = useCallback(
-    () => diffFilter !== "All",
-    [diffFilter],
-  );
+  const isExternalFilterPresent = useCallback(() => {
+    return diffFilter !== "All" || selectedTags.length > 0;
+  }, [diffFilter, selectedTags]);
 
   const doesExternalFilterPass = useCallback(
     (node: { data?: Problem }) => {
-      if (diffFilter === "All") return true;
-      return node.data?.difficulty === diffFilter;
+      const problem = node.data;
+      if (!problem) return false;
+
+      // Difficulty filter
+      if (diffFilter !== "All" && problem.difficulty !== diffFilter) {
+        return false;
+      }
+
+      // Tag filter
+      if (selectedTags.length > 0) {
+        const problemTags = problem.tags ?? [];
+
+        if (tagMatchMode === "AND") {
+          const matchesAll = selectedTags.every((tag) =>
+            problemTags.includes(tag),
+          );
+          if (!matchesAll) return false;
+        } else {
+          const matchesAny = selectedTags.some((tag) =>
+            problemTags.includes(tag),
+          );
+          if (!matchesAny) return false;
+        }
+      }
+
+      return true;
     },
-    [diffFilter],
+    [diffFilter, selectedTags, tagMatchMode],
   );
 
   /* ─── Column Definitions ────────────────────────────────── */
@@ -406,6 +456,49 @@ export default function CompanyProblems() {
         getQuickFilterText: (params) => params.value,
       },
       {
+        field: "timeframe_tag",
+        headerName: "<Time",
+        headerTooltip:
+          "Indicates how recently this problem was asked at this company — within the last 30 days, 3 months, or 6 months",
+        width: 60,
+        cellRenderer: ({ value }: ICellRendererParams) => {
+          const map: Record<TimeFrameTag, { label: string; style: string }> = {
+            "six-months": {
+              label: "6M",
+              style: "text-blue-400 bg-blue-400/10",
+            },
+            "three-months": {
+              label: "3M",
+              style: "text-violet-400 bg-violet-400/10",
+            },
+            "thirty-days": {
+              label: "30D",
+              style: "text-orange-400 bg-orange-400/10",
+            },
+          };
+          const entry = map[value as TimeFrameTag];
+          if (!entry)
+            return <span className="text-muted-foreground text-xs"></span>;
+          return (
+            <div className="flex h-full items-center">
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${entry.style}`}
+              >
+                {entry.label}
+              </span>
+            </div>
+          );
+        },
+        comparator: (a: TimeFrameTag, b: TimeFrameTag) => {
+          const order: Record<TimeFrameTag, number> = {
+            "thirty-days": 0,
+            "three-months": 1,
+            "six-months": 2,
+          };
+          return (order[a] ?? 99) - (order[b] ?? 99);
+        },
+      },
+      {
         field: "difficulty",
         headerName: "Difficulty",
         width: 120,
@@ -423,7 +516,8 @@ export default function CompanyProblems() {
       {
         field: "frequency",
         headerName: "Frequency",
-        width: 140,
+        headerTooltip: "How frequently this problem is asked at this company.",
+        width: 130,
         sort: "desc",
         cellRenderer: FrequencyCellRenderer,
         comparator: (a, b) => (a ?? -1) - (b ?? -1),
@@ -447,9 +541,10 @@ export default function CompanyProblems() {
         headerName: "Also Asked At",
         flex: 1.5,
         minWidth: 150,
-        sortable: false,
         filter: false,
         cellRenderer: OtherCompaniesCellRenderer,
+        // sort by number of other companies
+        comparator: (a, b) => (b?.length ?? 0) - (a?.length ?? 0),
 
         // tooltip:
         tooltipComponent: OtherCompaniesTooltip,
@@ -500,7 +595,7 @@ export default function CompanyProblems() {
         <div className="mx-auto sm:px-8 md:px-16">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-muted-foreground flex items-center gap-1 text-xs  tracking-wide">
+              <p className="text-muted-foreground flex items-center gap-1 text-xs tracking-wide">
                 <Building2 className="text-muted-foreground mr-1 mb-1 inline h-4 w-4" />
                 Company
               </p>
@@ -509,7 +604,7 @@ export default function CompanyProblems() {
               </h1>
             </div>
             <div className="flex flex-col items-center">
-              <div className="gap-6 flex">
+              <div className="flex gap-6">
                 {[
                   { label: "Easy", count: easyCnt, style: "text-emerald-500" },
                   { label: "Medium", count: medCnt, style: "text-amber-500" },
@@ -517,7 +612,7 @@ export default function CompanyProblems() {
                 ].map(({ label, count, style }) => (
                   <div key={label} className="text-center">
                     <div
-                      className={`text-sm sm:text-2xl font-semibold tabular-nums ${style}`}
+                      className={`text-sm font-semibold tabular-nums sm:text-2xl ${style}`}
                     >
                       {count}
                     </div>
@@ -531,9 +626,8 @@ export default function CompanyProblems() {
               </p>
             </div>
           </div>
-
           {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3 mt-6 sm:mt-2">
+          <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-2">
             <input
               type="text"
               placeholder="Filter problems…"
@@ -562,6 +656,15 @@ export default function CompanyProblems() {
                 </button>
               ))}
             </div>
+            <Separator orientation="vertical" className="h-5" />
+
+            <TagFilterDropdown
+              allTags={allTags}
+              selectedTags={selectedTags}
+              setSelectedTags={setSelectedTags}
+              tagMatchMode={tagMatchMode}
+              setTagMatchMode={setTagMatchMode}
+            />
           </div>
         </div>
       </div>
