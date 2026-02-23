@@ -47,7 +47,7 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: "/visor",
+    basename: "/visor-leetcode",
   },
 );
 
