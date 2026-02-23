@@ -40,6 +40,7 @@ type Problem = {
   other_companies: string[];
   completed: boolean;
   timeframe_tag: TimeFrameTag | null;
+  isToggling?: boolean; // UI-only state to indicate if we're currently toggling completion status
 };
 
 type Company = { id: number; name: string };
@@ -103,10 +104,99 @@ async function fetchAllCompanyProblems(companyId: number) {
 /* ─────────────────────────────────────────────────────────── */
 /* Cell Renderers */
 /* ─────────────────────────────────────────────────────────── */
-function CompletedCellRenderer({ value }: ICellRendererParams) {
+function CompletedCellRenderer(props: ICellRendererParams<Problem>) {
+  const { value, data, api } = props;
+
+  if (!data) return null;
+
+  const isLoading = (data as any).isToggling;
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (isLoading) return;
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      alert("Please sign in to mark problems as completed.");
+      return;
+    }
+
+    const userId = session.user.id;
+    const problemId = data.id;
+    const newCompleted = !value;
+
+    // Show loader immediately
+    const loadingRow = { ...data, isToggling: true };
+
+    api.applyTransaction({
+      update: [loadingRow],
+    });
+
+    // 👇 FORCE CELL REFRESH
+    api.refreshCells({
+      rowNodes: [props.node],
+      force: true,
+    });
+    try {
+      if (newCompleted) {
+        const { error } = await supabase
+          .from("user_completed_problems")
+          .insert({
+            user_id: userId,
+            problem_id: problemId,
+          });
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("user_completed_problems")
+          .delete()
+          .eq("user_id", userId)
+          .eq("problem_id", problemId);
+
+        if (error) throw error;
+      }
+
+      // Success → update completed state
+      api.applyTransaction({
+        update: [
+          {
+            ...data,
+            completed: newCompleted,
+            isToggling: false,
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("Toggle failed:", err);
+
+      // Rollback + remove loader
+      api.applyTransaction({
+        update: [
+          {
+            ...data,
+            completed: value,
+            isToggling: false,
+          },
+        ],
+      });
+    }
+  };
+
   return (
-    <div className="flex h-full items-center">
-      {value ? (
+    <div
+      className={`flex h-full items-center ${
+        isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+      }`}
+      onClick={handleToggle}
+    >
+      {isLoading ? (
+        <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+      ) : value ? (
         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
       ) : (
         <div className="border-border h-4 w-4 rounded-full border" />
@@ -339,6 +429,7 @@ export default function CompanyProblems() {
             [],
           completed: false,
           timeframe_tag: row.timeframe_tag ?? null,
+          isToggling: false,
         };
       });
 
@@ -718,6 +809,7 @@ export default function CompanyProblems() {
               suppressCellFocus
               isExternalFilterPresent={isExternalFilterPresent}
               doesExternalFilterPass={doesExternalFilterPass}
+              getRowId={(params) => params.data.id.toString()}
               onGridReady={(params) => {
                 params.api.setGridOption("quickFilterText", search);
               }}
