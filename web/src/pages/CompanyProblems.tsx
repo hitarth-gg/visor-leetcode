@@ -30,9 +30,9 @@ import { TagFilterDropdown } from "~/components/TagFilterDropdown";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-/* ─────────────────────────────────────────────────────────── */
-/* Types */
-/* ─────────────────────────────────────────────────────────── */
+/* ------------------------------------------------------ */
+/*                          Types                         */
+/* ------------------------------------------------------ */
 type Difficulty = "Easy" | "Medium" | "Hard";
 
 type Problem = {
@@ -53,8 +53,9 @@ type Company = { id: number; name: string };
 type TimeFrameTag = "six-months" | "three-months" | "thirty-days";
 
 /* ─────────────────────────────────────────────────────────── */
-/* Constants */
-/* ─────────────────────────────────────────────────────────── */
+/* ------------------------------------------------------ */
+/*                        Constants                       */
+/* ------------------------------------------------------ */
 const DIFFICULTY_ORDER: Record<string, number> = {
   Easy: 0,
   Medium: 1,
@@ -67,9 +68,9 @@ const DIFFICULTY_STYLES: Record<string, string> = {
   Hard: "text-rose-500 bg-rose-500/10",
 };
 
-/* ─────────────────────────────────────────────────────────── */
-/* Helpers */
-/* ─────────────────────────────────────────────────────────── */
+/* ------------------------------------------------------ */
+/*                         Helpers                        */
+/* ------------------------------------------------------ */
 async function fetchAllCompanyProblems(companyId: number) {
   const PAGE_SIZE = 4000;
   let from = 0;
@@ -107,9 +108,9 @@ async function fetchAllCompanyProblems(companyId: number) {
   return allRows;
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/* Cell Renderers */
-/* ─────────────────────────────────────────────────────────── */
+/* ------------------------------------------------------ */
+/*                     Cell Renderers                     */
+/* ------------------------------------------------------ */
 function CompletedCellRenderer(props: ICellRendererParams<Problem>) {
   const { value, data, api } = props;
 
@@ -142,7 +143,7 @@ function CompletedCellRenderer(props: ICellRendererParams<Problem>) {
       update: [loadingRow],
     });
 
-    // 👇 FORCE CELL REFRESH
+    // FORCE CELL REFRESH
     api.refreshCells({
       rowNodes: [props.node],
       force: true,
@@ -167,7 +168,7 @@ function CompletedCellRenderer(props: ICellRendererParams<Problem>) {
         if (error) throw error;
       }
 
-      // Success → update completed state
+      // Success -> update completed state
       api.applyTransaction({
         update: [
           {
@@ -365,9 +366,9 @@ function OtherCompaniesCellRenderer({
   );
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/* Main Component */
-/* ─────────────────────────────────────────────────────────── */
+/* ------------------------------------------------------ */
+/*                     Main Component                     */
+/* ------------------------------------------------------ */
 export default function CompanyProblems() {
   const { theme } = useAppContext();
   const { id } = useParams<{ id: string }>();
@@ -389,7 +390,7 @@ export default function CompanyProblems() {
 
   const gridRef = useRef<AgGridReact<Problem>>(null);
 
-  /* ─── Fetch ──────────────────────────────────────────────── */
+  /* ------------------------ Fetch ----------------------- */
   useEffect(() => {
     if (!companyId) return;
 
@@ -479,7 +480,7 @@ export default function CompanyProblems() {
     fetchTags();
   }, []);
 
-  /* ─── Quick filter (search + difficulty) ────────────────── */
+  /* ----------------------- Filters ---------------------- */
   useEffect(() => {
     if (!gridRef.current?.api) return;
 
@@ -529,8 +530,7 @@ export default function CompanyProblems() {
     [diffFilter, selectedTags, tagMatchMode, hideCompleted],
   );
 
-  /* ─── Column Definitions ────────────────────────────────── */
-
+  /* --------------------- Column Defs -------------------- */
   const columnDefs = useMemo<ColDef<Problem>[]>(
     () => [
       {
@@ -677,13 +677,12 @@ export default function CompanyProblems() {
     [],
   );
 
-  /* ─── Stats ─────────────────────────────────────────────── */
+  /* ------------------------ Stats ----------------------- */
   const easyCnt = problems.filter((p) => p.difficulty === "Easy").length;
   const medCnt = problems.filter((p) => p.difficulty === "Medium").length;
   const hardCnt = problems.filter((p) => p.difficulty === "Hard").length;
   const completedCnt = problems.filter((p) => p.completed).length;
 
-  /* ─── Render ─────────────────────────────────────────────── */
   if (loading) {
     return (
       <div className="flex items-center justify-center">

@@ -1,6 +1,5 @@
 import { TriangleAlert } from "lucide-react";
 import { useRouteError } from "react-router";
-import CountBtn from "~/components/count-btn";
 import huhGif from "~/assets/huh.gif";
 
 export default function ErrorPage() {
@@ -34,7 +33,6 @@ export default function ErrorPage() {
           {data && <div className="text-muted-foreground text-sm">{data}</div>}
         </div>
       </div>
-      <CountBtn className="absolute top-4 right-4" />
     </div>
   );
 }

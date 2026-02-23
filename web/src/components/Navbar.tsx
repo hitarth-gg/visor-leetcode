@@ -220,7 +220,6 @@ function ToggleTheme() {
         setTheme(theme === "light" ? "dark" : "light");
       }}
     >
-      {/* <SunMoon className="text-foreground" /> */}
       {theme === "light" ? <Sun /> : <Moon />}
     </Button>
   );

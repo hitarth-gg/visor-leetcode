@@ -5,6 +5,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap");
 /* ------------------------------------------------------ */
 
+/* ---------------- AG GRID Custom Styles --------------- */
 .fader {
   /* Apply a fading effect */
   -webkit-mask-image: linear-gradient(
@@ -36,6 +37,7 @@
   border-radius: 2px;
   transform: translateY(-50%);
 }
+/* ------------------------------------------------------ */
 
 @import "tailwindcss";
 

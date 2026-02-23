@@ -22,14 +22,12 @@ export default function Home() {
   /* --------------------- FETCH STATS -------------------- */
   useEffect(() => {
     async function fetchStats() {
-      // 1️⃣ Memory cache
       if (memoryCache) {
         setStats(memoryCache);
         setLoading(false);
         return;
       }
 
-      // 2️⃣ LocalStorage cache
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
@@ -41,7 +39,6 @@ export default function Home() {
         }
       }
 
-      // 3️⃣ Fetch counts from Supabase
       const [companiesRes, problemsRes] = await Promise.all([
         supabase.from("companies").select("*", { count: "exact", head: true }),
 

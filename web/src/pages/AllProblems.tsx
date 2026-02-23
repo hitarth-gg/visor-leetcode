@@ -364,9 +364,7 @@ function OtherCompaniesCellRenderer({
   );
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/* Main Component */
-/* ─────────────────────────────────────────────────────────── */
+/* ------------------- MAIN COMPONENT ------------------- */
 export default function AllProblems() {
   const { theme } = useAppContext();
 
@@ -385,7 +383,7 @@ export default function AllProblems() {
 
   const gridRef = useRef<AgGridReact<Problem>>(null);
 
-  /* ─── Fetch ──────────────────────────────────────────────── */
+  // fetch
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -455,7 +453,7 @@ export default function AllProblems() {
     fetchTags();
   }, []);
 
-  /* ─── Quick filter (search + difficulty) ────────────────── */
+  // filter - AG Grid external filter handles difficulty, tag, and hide completed; quick filter handles search
   useEffect(() => {
     if (!gridRef.current?.api) return;
 
@@ -505,8 +503,7 @@ export default function AllProblems() {
     [diffFilter, selectedTags, tagMatchMode, hideCompleted],
   );
 
-  /* ─── Column Definitions ────────────────────────────────── */
-
+  /* --------------------- Column Defs -------------------- */
   const columnDefs = useMemo<ColDef<Problem>[]>(
     () => [
       {
@@ -610,13 +607,12 @@ export default function AllProblems() {
     [],
   );
 
-  /* ─── Stats ─────────────────────────────────────────────── */
+  /* ------------------------ Stats ----------------------- */
   const easyCnt = problems.filter((p) => p.difficulty === "Easy").length;
   const medCnt = problems.filter((p) => p.difficulty === "Medium").length;
   const hardCnt = problems.filter((p) => p.difficulty === "Hard").length;
   const completedCnt = problems.filter((p) => p.completed).length;
 
-  /* ─── Render ─────────────────────────────────────────────── */
   if (loading) {
     return (
       <div className="flex items-center justify-center">
