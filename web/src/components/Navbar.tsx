@@ -1,5 +1,5 @@
-import { House, Logs, Menu, Moon, Sun, SunMoon, X } from "lucide-react";
-import { Link } from "react-router";
+import { House, LogOut, Menu, Moon, Sun, User, X } from "lucide-react";
+import { Link, useNavigate } from "react-router";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,12 +9,15 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "~/components/ui/navigation-menu";
-import { Input } from "./ui/input";
-import { Field } from "./ui/field";
 import { useAppContext } from "~/context/useAppContext";
 import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "~/supabase/supabaseClient";
+import type { Session } from "@supabase/supabase-js";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Spinner } from "./ui/spinner";
+import SearchCompany from "./SearchCompany";
 
 export default function Navbar() {
   return (
@@ -34,7 +37,8 @@ export default function Navbar() {
 
         <div className="flex h-full items-center justify-between gap-4">
           <ToggleTheme />
-          <SearchBar />
+          <SearchCompany />
+          <AuthButton />
         </div>
       </div>
     </div>
@@ -82,6 +86,70 @@ function MobileNav() {
   );
 }
 
+export function AuthButton() {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+
+    // Keep in sync on tab focus, sign in/out events
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
+        setSession(session);
+      },
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    navigate("/sign-in");
+  }
+
+  if (session) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={"outline"}
+            size={"icon"}
+            className="h-8 cursor-pointer px-3 shadow-none"
+            onClick={async () => {
+              setIsSigningOut(true);
+              try {
+                await handleSignOut();
+              } finally {
+                setIsSigningOut(false);
+              }
+            }}
+            disabled={isSigningOut}
+          >
+            {isSigningOut ? <Spinner /> : <LogOut />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Sign out</p>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Link to="/sign-in">
+      <Button variant={"default"} className="h-8 cursor-pointer px-3">
+        <User />
+        <p>Sign In</p>
+      </Button>
+    </Link>
+  );
+}
+
 function NavigateLink({
   title,
   path,
@@ -119,19 +187,6 @@ function NavigateDropdown() {
         <NavigationMenuLink className="p-4">Link</NavigationMenuLink>
       </NavigationMenuContent>
     </NavigationMenuItem>
-  );
-}
-
-function SearchBar() {
-  return (
-    <div className="relative">
-      <Field>
-        <Input
-          placeholder="Search a company..."
-          className="bg-input/30 h-8 rounded-sm shadow-none"
-        />
-      </Field>
-    </div>
   );
 }
 
