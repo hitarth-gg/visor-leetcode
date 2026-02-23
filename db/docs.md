@@ -39,3 +39,14 @@ CREATE TABLE IF NOT EXISTS problem_tags (
 CREATE INDEX IF NOT EXISTS idx_problems_title ON problems(title);
 CREATE INDEX IF NOT EXISTS idx_company_problems_timeframe ON company_problems(timeframe_tag);
 ```
+
+# User Completed Problems
+
+```sql
+CREATE TABLE IF NOT EXISTS user_completed_problems (
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  problem_id BIGINT REFERENCES problems(id) ON DELETE CASCADE,
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  PRIMARY KEY (user_id, problem_id)
+);
+```
