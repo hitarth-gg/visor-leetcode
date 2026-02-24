@@ -133,7 +133,6 @@ export function AuthButton() {
   const [session, setSession] = useState<Session | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  console.log(avatarUrl);
 
   useEffect(() => {
     // Get initial session

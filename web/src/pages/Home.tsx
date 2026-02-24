@@ -12,7 +12,11 @@ import { Badge } from "~/components/ui/badge";
 const CACHE_KEY = "home_stats_cache";
 const CACHE_DURATION = 1000 * 60 * 15; // 15 min
 
-let memoryCache: { companies: number; problems: number } | null = null;
+let memoryCache: {
+  companies: number;
+  problems: number;
+  lastDbUpdate: string | null;
+} | null = null;
 
 export default function Home() {
   const [stats, setStats] = useState<{
@@ -28,8 +32,13 @@ export default function Home() {
   useEffect(() => {
     async function fetchStats() {
       if (memoryCache) {
-        setStats(memoryCache);
+        setStats({
+          companies: memoryCache.companies,
+          problems: memoryCache.problems,
+        });
+        setLastDbUpdate(memoryCache.lastDbUpdate);
         setLoading(false);
+        console.log(memoryCache);
         return;
       }
 
@@ -37,9 +46,13 @@ export default function Home() {
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Date.now() - parsed.timestamp < CACHE_DURATION) {
-          memoryCache = parsed.data;
+          memoryCache = {
+            ...parsed.data,
+            lastDbUpdate: parsed.lastDbUpdate ?? null,
+          };
+
           setStats(parsed.data);
-          if (parsed.lastDbUpdate) setLastDbUpdate(parsed.lastDbUpdate);
+          setLastDbUpdate(parsed.lastDbUpdate ?? null);
           setLoading(false);
           return;
         }
@@ -68,8 +81,12 @@ export default function Home() {
         .single();
 
       const lastDbUpdate = lastDbUpdateRes.data?.last_db_update ?? null;
+      console.log("Fetched stats:", data, "Last DB Update:", lastDbUpdate);
 
-      memoryCache = data;
+      memoryCache = {
+        ...data,
+        lastDbUpdate,
+      };
 
       localStorage.setItem(
         CACHE_KEY,
@@ -210,23 +227,25 @@ export default function Home() {
                 </>
               )}
             </div>
-            {!loading && <div className="flex flex-row items-center gap-2">
-              <div className="text-muted-foreground flex gap-x-1 text-sm">
-                Problems Last Updated on{" "}
-                <Badge
-                  variant="default"
-                  className="bg-purple-50 px-1.5 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
-                >
-                  {lastDbUpdate
-                    ? new Date(lastDbUpdate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "—"}
-                </Badge>
+            {!loading && (
+              <div className="flex flex-row items-center gap-2">
+                <div className="text-muted-foreground flex gap-x-1 text-sm">
+                  Problems Last Updated on{" "}
+                  <Badge
+                    variant="default"
+                    className="bg-purple-50 px-1.5 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+                  >
+                    {lastDbUpdate
+                      ? new Date(lastDbUpdate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "—"}
+                  </Badge>
+                </div>
               </div>
-            </div>}
+            )}
           </div>
         </div>
       </div>
