@@ -6,6 +6,8 @@ import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { supabase } from "~/supabase/supabaseClient";
 
+import { CompanyCarousel } from "~/components/CompanyCarousel";
+
 const CACHE_KEY = "home_stats_cache";
 const CACHE_DURATION = 1000 * 60 * 15; // 15 min
 
@@ -81,7 +83,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex h-screen flex-col items-center">
+    <main className="flex h-[calc(100vh-var(--header-height,4rem))] flex-col items-center justify-between">
       <div className="flex w-full flex-col items-center gap-4 px-6 py-16">
         <div className="font-geist text-primary relative flex flex-col items-start text-3xl font-semibold sm:text-4xl md:text-5xl dark:drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
           <span>Company-Wise</span>
@@ -103,88 +105,98 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="font-geist flex w-fit flex-col items-center px-6 py-8">
-        <div className="mx-auto flex w-fit items-center gap-4 font-mono">
-          <Link
-            to="https://github.com/snehasishroy/leetcode-companywise-interview-questions"
-            target="_blank"
-          >
-            <Button
-              size={"lg"}
-              className="bg-muted/50 mt-4 cursor-pointer text-lg font-normal shadow-none"
-              variant={"outline"}
+      <div className="my-auto">
+        <div className="font-geist flex w-fit flex-col items-center px-6 py-8">
+          <div className="mx-auto flex w-fit items-center gap-4 font-mono">
+            <Link
+              to="https://github.com/snehasishroy/leetcode-companywise-interview-questions"
+              target="_blank"
             >
-              <Database />
-              Database
-            </Button>
-          </Link>
+              <Button
+                size={"lg"}
+                className="bg-muted/50 mt-4 cursor-pointer text-lg font-normal shadow-none"
+                variant={"outline"}
+              >
+                <Database />
+                Database
+              </Button>
+            </Link>
+
+            <Link
+              to="https://github.com/hitarth-gg/visor-leetcode"
+              target="_blank"
+            >
+              <Button
+                size={"lg"}
+                className="bg-muted/50 mt-4 cursor-pointer text-lg font-normal shadow-none"
+                variant={"outline"}
+              >
+                <Globe />
+                Website
+              </Button>
+            </Link>
+          </div>
 
           <Link
-            to="https://github.com/hitarth-gg/visor-leetcode"
-            target="_blank"
+            to={session ? "/all-problems" : "/sign-in?next=/all-problems"}
+            className="w-full"
           >
-            <Button
-              size={"lg"}
-              className="bg-muted/50 mt-4 cursor-pointer text-lg font-normal shadow-none"
-              variant={"outline"}
-            >
-              <Globe />
-              Website
-            </Button>
+            {!session ? (
+              <Button
+                size={"lg"}
+                className="font-space-grotesk mt-4 w-full cursor-pointer text-lg shadow-none"
+                variant={"default"}
+              >
+                <User strokeWidth={3} />
+                Sign in to save progress
+              </Button>
+            ) : (
+              <Button
+                size={"lg"}
+                className="font-space-grotesk mt-4 w-full cursor-pointer text-lg shadow-none"
+                variant={"default"}
+              >
+                Start Solving <Code strokeWidth={3} />
+              </Button>
+            )}
           </Link>
         </div>
-
-        <Link
-          to={session ? "/all-problems" : "/sign-in?next=/all-problems"}
-          className="w-full"
-        >
-          {!session ? (
-            <Button
-              size={"lg"}
-              className="font-space-grotesk mt-4 w-full cursor-pointer text-lg shadow-none"
-              variant={"default"}
-            >
-              <User strokeWidth={3} />
-              Sign in to save progress
-            </Button>
-          ) : (
-            <Button
-              size={"lg"}
-              className="font-space-grotesk mt-4 w-full cursor-pointer text-lg shadow-none"
-              variant={"default"}
-            >
-              Start Solving <Code strokeWidth={3} />
-            </Button>
-          )}
-        </Link>
-      </div>
-      <div className="w-full">
-        {/* ───────── Stats Section ───────── */}
-        <div className="mt-auto w-full py-8">
-          <div className="mx-auto flex max-w-4xl justify-center gap-16 text-center">
-            {loading ? (
-              <div className="text-muted-foreground text-sm">
-                <Spinner />
-              </div>
-            ) : (
-              <>
-                <div className="flex flex-row items-center gap-2">
-                  <div className="text-xl font-medium tracking-tight tabular-nums">
-                    {stats?.companies.toLocaleString()}
-                  </div>
-                  <div className="text-muted-foreground text-sm">Companies</div>
+        <div className="flex w-full flex-1 flex-col">
+          {/* -------------------- STATS SECTION ------------------- */}
+          <div className="w-full py-8">
+            <div className="mx-auto flex max-w-4xl justify-center gap-16 text-center">
+              {loading ? (
+                <div className="text-muted-foreground text-sm">
+                  <Spinner />
                 </div>
-
-                <div className="flex flex-row items-center gap-2">
-                  <div className="text-xl font-semibold tabular-nums">
-                    {stats?.problems.toLocaleString()}
+              ) : (
+                <>
+                  <div className="flex flex-row items-center gap-2">
+                    <div className="text-xl font-medium tracking-tight tabular-nums">
+                      {stats?.companies.toLocaleString()}
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      Companies
+                    </div>
                   </div>
-                  <div className="text-muted-foreground text-sm">Problems</div>
-                </div>
-              </>
-            )}
+
+                  <div className="flex flex-row items-center gap-2">
+                    <div className="text-xl font-semibold tabular-nums">
+                      {stats?.problems.toLocaleString()}
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      Problems
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-auto w-full">
+        <CompanyCarousel />
       </div>
     </main>
   );

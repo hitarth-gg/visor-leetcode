@@ -272,7 +272,7 @@ function FrequencyCellRenderer({ value }: ICellRendererParams) {
         />
       </div>
       <span className="text-muted-foreground text-xs tabular-nums">
-        {value.toFixed(2)}%
+        {value.toFixed(0)}%
       </span>
     </div>
   );
@@ -627,7 +627,7 @@ export default function CompanyProblems() {
       {
         field: "acceptance",
         headerName: "Acceptance",
-        width: 120,
+        width: 110,
         cellRenderer: AcceptanceCellRenderer,
         comparator: (a, b) => (a ?? -1) - (b ?? -1),
       },
@@ -635,7 +635,7 @@ export default function CompanyProblems() {
         field: "frequency",
         headerName: "Frequency",
         headerTooltip: "How frequently this problem is asked at this company.",
-        width: 130,
+        width: 120,
         sort: "desc",
         cellRenderer: FrequencyCellRenderer,
         comparator: (a, b) => (a ?? -1) - (b ?? -1),

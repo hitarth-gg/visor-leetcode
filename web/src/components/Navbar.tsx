@@ -17,11 +17,20 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Spinner } from "./ui/spinner";
 import SearchCompany from "./SearchCompany";
 import GithubSvg from "~/assets/GithubSvg";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function Navbar() {
   return (
     <div className="bg-background font-geist sticky top-0 z-50 flex h-(--header-height) w-full">
-      <div className="flex w-full items-center justify-between px-6">
+      <div className="flex w-full items-center justify-between px-2 sm:px-6">
         <div className="hidden h-full items-center justify-between md:flex">
           <NavigationMenu>
             <NavigationMenuList>
@@ -37,6 +46,7 @@ export default function Navbar() {
           <Link
             to="https://github.com/hitarth-gg/visor-leetcode"
             target="_blank"
+            className="hidden sm:flex"
           >
             <Button
               variant={"ghost"}
@@ -60,7 +70,7 @@ function MobileNav() {
 
   return (
     <>
-      <div className="flex md:hidden">
+      <div className="mr-2 flex md:hidden">
         <Button
           variant={"ghost"}
           size={"icon"}
@@ -122,10 +132,15 @@ export function AuthButton() {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  console.log(avatarUrl);
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAvatarUrl(data.session?.user?.user_metadata?.avatar_url ?? null);
+    });
 
     // Keep in sync on tab focus, sign in/out events
     const {
@@ -133,6 +148,7 @@ export function AuthButton() {
     } = supabase.auth.onAuthStateChange(
       (_event: string, session: Session | null) => {
         setSession(session);
+        setAvatarUrl(session?.user?.user_metadata?.avatar_url ?? null);
       },
     );
 
@@ -148,22 +164,50 @@ export function AuthButton() {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={"outline"}
-            size={"icon"}
-            className="h-8 cursor-pointer px-3 shadow-none"
-            onClick={async () => {
-              setIsSigningOut(true);
-              try {
-                await handleSignOut();
-              } finally {
-                setIsSigningOut(false);
-              }
-            }}
-            disabled={isSigningOut}
-          >
-            {isSigningOut ? <Spinner /> : <LogOut />}
-          </Button>
+          {isSigningOut ? (
+            <Spinner />
+          ) : avatarUrl ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={avatarUrl} alt="" />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-32">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate("/profile");
+                    }}
+                  >
+                    Profile
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={async () => {
+                      setIsSigningOut(true);
+                      try {
+                        await handleSignOut();
+                      } finally {
+                        setIsSigningOut(false);
+                      }
+                    }}
+                    disabled={isSigningOut}
+                  >
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <LogOut />
+          )}
         </TooltipTrigger>
         <TooltipContent>
           <p>Sign out</p>
