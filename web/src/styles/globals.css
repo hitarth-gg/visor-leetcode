@@ -39,6 +39,35 @@
 }
 /* ------------------------------------------------------ */
 
+/* ------------------ CUSTOM SCROLL BAR ----------------- */
+/* Apply custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px; /* Scrollbar width */
+  height: 7px; /* Scrollbar height */
+}
+
+/* Scrollbar track */
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px; /* Rounded track */
+}
+
+/* Scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background: #4a4a4a; /* Thumb color */
+  border-radius: 9999px; /* Rounded thumb */
+}
+
+/* Scrollbar thumb states */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Hover thumb color */
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #444; /* Active thumb color */
+}
+/* ------------------------------------------------------ */
+
 @import "tailwindcss";
 
 @plugin "tailwindcss-animate";
