@@ -7,6 +7,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { supabase } from "~/supabase/supabaseClient";
 
 import { CompanyCarousel } from "~/components/CompanyCarousel";
+import { Badge } from "~/components/ui/badge";
 
 const CACHE_KEY = "home_stats_cache";
 const CACHE_DURATION = 1000 * 60 * 15; // 15 min
@@ -22,6 +23,8 @@ export default function Home() {
   const [session, setSession] = useState<boolean>(false);
 
   /* --------------------- FETCH STATS -------------------- */
+  const [lastDbUpdate, setLastDbUpdate] = useState<string | null>(null);
+
   useEffect(() => {
     async function fetchStats() {
       if (memoryCache) {
@@ -36,6 +39,7 @@ export default function Home() {
         if (Date.now() - parsed.timestamp < CACHE_DURATION) {
           memoryCache = parsed.data;
           setStats(parsed.data);
+          if (parsed.lastDbUpdate) setLastDbUpdate(parsed.lastDbUpdate);
           setLoading(false);
           return;
         }
@@ -43,8 +47,13 @@ export default function Home() {
 
       const [companiesRes, problemsRes] = await Promise.all([
         supabase.from("companies").select("*", { count: "exact", head: true }),
-
         supabase.from("problems").select("*", { count: "exact", head: true }),
+        supabase
+          .from("problems")
+          .select("updated_at")
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .single(),
       ]);
 
       const data = {
@@ -52,17 +61,27 @@ export default function Home() {
         problems: problemsRes.count ?? 0,
       };
 
+      const lastDbUpdateRes = await supabase
+        .from("app_metadata")
+        .select("last_db_update")
+        .eq("id", 1)
+        .single();
+
+      const lastDbUpdate = lastDbUpdateRes.data?.last_db_update ?? null;
+
       memoryCache = data;
 
       localStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
           data,
+          lastDbUpdate,
           timestamp: Date.now(),
         }),
       );
 
       setStats(data);
+      setLastDbUpdate(lastDbUpdate);
       setLoading(false);
     }
     fetchStats();
@@ -84,7 +103,7 @@ export default function Home() {
 
   return (
     <main className="flex h-[calc(100vh-var(--header-height,4rem))] flex-col items-center justify-between">
-      <div className="flex w-full flex-col items-center gap-4 px-6 py-16">
+      <div className="flex w-full flex-col items-center gap-4 px-6 pt-16">
         <div className="font-geist text-primary relative flex flex-col items-start text-3xl font-semibold sm:text-4xl md:text-5xl dark:drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
           <span>Company-Wise</span>
           <span>
@@ -163,7 +182,7 @@ export default function Home() {
         </div>
         <div className="flex w-full flex-1 flex-col">
           {/* -------------------- STATS SECTION ------------------- */}
-          <div className="w-full py-8">
+          <div className="font-geist flex w-full flex-col items-center gap-4">
             <div className="mx-auto flex max-w-4xl justify-center gap-16 text-center">
               {loading ? (
                 <div className="text-muted-foreground text-sm">
@@ -191,6 +210,23 @@ export default function Home() {
                 </>
               )}
             </div>
+            {!loading && <div className="flex flex-row items-center gap-2">
+              <div className="text-muted-foreground flex gap-x-1 text-sm">
+                Problems Last Updated on{" "}
+                <Badge
+                  variant="default"
+                  className="bg-purple-50 px-1.5 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
+                >
+                  {lastDbUpdate
+                    ? new Date(lastDbUpdate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </Badge>
+              </div>
+            </div>}
           </div>
         </div>
       </div>
