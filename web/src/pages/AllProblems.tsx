@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { useParams } from "react-router";
 import { AgGridReact } from "ag-grid-react";
 import type {
   ColDef,
@@ -10,17 +9,10 @@ import {
   ModuleRegistry,
   AllCommunityModule,
   themeQuartz,
-  TooltipModule,
 } from "ag-grid-community";
 
 import { supabase } from "~/supabase/supabaseClient";
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  Building2,
-  EyeOff,
-  Eye,
-} from "lucide-react";
+import { ArrowUpRight, CheckCircle2, EyeOff, Eye } from "lucide-react";
 import { useAppContext } from "~/context/useAppContext";
 import { Badge } from "~/components/ui/badge";
 import { getCompanyColor } from "~/utils/companyColors";
@@ -49,7 +41,6 @@ type Problem = {
   isToggling?: boolean; // UI-only state to indicate if we're currently toggling completion status
 };
 
-type Company = { id: number; name: string };
 type TimeFrameTag = "six-months" | "three-months" | "thirty-days";
 
 /* ─────────────────────────────────────────────────────────── */
@@ -612,7 +603,6 @@ export default function AllProblems() {
   const medCnt = problems.filter((p) => p.difficulty === "Medium").length;
   const hardCnt = problems.filter((p) => p.difficulty === "Hard").length;
   const completedCnt = problems.filter((p) => p.completed).length;
-
 
   if (loading) {
     return (

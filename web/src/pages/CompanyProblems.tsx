@@ -10,7 +10,6 @@ import {
   ModuleRegistry,
   AllCommunityModule,
   themeQuartz,
-  TooltipModule,
 } from "ag-grid-community";
 
 import { supabase } from "~/supabase/supabaseClient";
