@@ -19,6 +19,7 @@ import { getCompanyColor } from "~/utils/companyColors";
 import { cn } from "~/lib/utils";
 import { Separator } from "~/components/ui/separator";
 import { TagFilterDropdown } from "~/components/TagFilterDropdown";
+import { CompanyFilterDropdown } from "~/components/CompanyFilterDropdown";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -372,6 +373,17 @@ export default function AllProblems() {
 
   const [hideCompleted, setHideCompleted] = useState(false);
 
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+
+  // ponytail: compute unique companies from loaded data, no extra query
+  const allCompanies = useMemo(() => {
+    const names = new Set<string>();
+    for (const p of problems) {
+      for (const c of p.other_companies) names.add(c);
+    }
+    return [...names].sort();
+  }, [problems]);
+
   const gridRef = useRef<AgGridReact<Problem>>(null);
 
   // fetch
@@ -451,11 +463,11 @@ export default function AllProblems() {
     // AG Grid external filter handles difficulty; quick filter handles search
     gridRef.current.api.setGridOption("quickFilterText", search);
     gridRef.current.api.onFilterChanged();
-  }, [search, diffFilter, selectedTags, tagMatchMode, hideCompleted]);
+  }, [search, diffFilter, selectedTags, tagMatchMode, hideCompleted, selectedCompanies]);
 
   const isExternalFilterPresent = useCallback(() => {
-    return diffFilter !== "All" || selectedTags.length > 0 || hideCompleted;
-  }, [diffFilter, selectedTags, hideCompleted]);
+    return diffFilter !== "All" || selectedTags.length > 0 || hideCompleted || selectedCompanies.length > 0;
+  }, [diffFilter, selectedTags, hideCompleted, selectedCompanies]);
 
   const doesExternalFilterPass = useCallback(
     (node: { data?: Problem }) => {
@@ -489,9 +501,18 @@ export default function AllProblems() {
         }
       }
 
+      // Company filter — match any selected company
+      if (selectedCompanies.length > 0) {
+        const problemCompanies = problem.other_companies ?? [];
+        const matchesCompany = selectedCompanies.some((c) =>
+          problemCompanies.includes(c),
+        );
+        if (!matchesCompany) return false;
+      }
+
       return true;
     },
-    [diffFilter, selectedTags, tagMatchMode, hideCompleted],
+    [diffFilter, selectedTags, tagMatchMode, hideCompleted, selectedCompanies],
   );
 
   /* --------------------- Column Defs -------------------- */
@@ -692,6 +713,12 @@ export default function AllProblems() {
               setSelectedTags={setSelectedTags}
               tagMatchMode={tagMatchMode}
               setTagMatchMode={setTagMatchMode}
+            />
+
+            <CompanyFilterDropdown
+              allCompanies={allCompanies}
+              selectedCompanies={selectedCompanies}
+              setSelectedCompanies={setSelectedCompanies}
             />
           </div>
         </div>
