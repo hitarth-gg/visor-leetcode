@@ -662,6 +662,7 @@ export default function Profile() {
                 tooltipShowDelay={300}
                 tooltipShowMode="standard"
                 headerHeight={40}
+                alwaysMultiSort
                 theme={themeQuartz
                   .withParams({ cellFontFamily: "geist, sans-serif" })
                   .withParams(

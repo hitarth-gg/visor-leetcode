@@ -799,6 +799,7 @@ export default function CompanyProblems() {
               tooltipShowDelay={300}
               tooltipShowMode="standard"
               headerHeight={40}
+              alwaysMultiSort
               theme={themeQuartz
                 .withParams({
                   cellFontFamily: "geist, sans-serif",
