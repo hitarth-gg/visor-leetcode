@@ -47,7 +47,7 @@ type pslug struct {
 	Slug string
 }
 
-func scrapeTagsMain() {
+func ScrapeTagsMain() {
 	godotenv.Load()
 
 	dsn := os.Getenv("LOCAL_DATABASE_URL")

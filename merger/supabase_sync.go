@@ -48,7 +48,7 @@ type CompanyProblem struct {
 	LastSeen   time.Time      `db:"last_seen"`
 }
 
-func supabaseSyncMain() {
+func SupabaseSyncMain() {
 	godotenv.Load()
 	localDSN = os.Getenv("LOCAL_DATABASE_URL")
 	remoteDSN = os.Getenv("SUPABASE_DATABASE_URL")

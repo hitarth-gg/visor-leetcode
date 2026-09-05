@@ -220,7 +220,7 @@ func addProblemTag(db *sqlx.DB, problemID int64, tag string) error {
 	return err
 }
 
-func scrapeGithubMain() {
+func ScrapeGithubMain() {
 	// using env vars
 	godotenv.Load()
 
