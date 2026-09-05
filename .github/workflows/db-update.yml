@@ -1,0 +1,52 @@
+name: Auto-Update Database
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # weekly on Sunday midnight
+  workflow_dispatch: # manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: visor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Clone problem data repository
+        run: |
+          rm -rf leetcode-companywise-interview-questions
+          git clone --depth 1 https://github.com/snehasishroy/leetcode-companywise-interview-questions.git leetcode-companywise-interview-questions
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Run data merger
+        working-directory: merger
+        run: go run . --ci
+        env:
+          LOCAL_DATABASE_URL: postgres://postgres:postgres@localhost:5432/visor?sslmode=disable
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          ROOT_DIR: ../leetcode-companywise-interview-questions
+
+      - name: Update last_db_update timestamp
+        run: |
+          psql "${{ secrets.SUPABASE_DATABASE_URL }}" \
+            -c "INSERT INTO app_metadata (id, last_db_update) VALUES (1, now()) ON CONFLICT (id) DO UPDATE SET last_db_update = now();"
